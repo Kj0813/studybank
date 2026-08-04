@@ -2,19 +2,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import type { Note, NoteFormData } from '../types';
 
+const API_URL = 'studybank-api.onrender.com';
+
 export function useNotes() {
   const { token } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const headers = token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  const getHeaders = (): Record<string, string> => {
+    const h: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+  };
 
   const fetchNotes = useCallback(async () => {
     if (!token) { setNotes([]); setLoading(false); return; }
     try {
       setLoading(true);
-      const res = await fetch('/api/notes/my', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/notes/my`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setNotes(data);
@@ -29,9 +35,9 @@ export function useNotes() {
   useEffect(() => { fetchNotes(); }, [fetchNotes]);
 
   const createNote = async (formData: NoteFormData): Promise<Note> => {
-    const res = await fetch('/api/notes', {
+    const res = await fetch(`${API_URL}/api/notes`, {
       method: 'POST',
-      headers,
+      headers: getHeaders(),
       body: JSON.stringify({
         title: formData.title,
         course: formData.course,
@@ -47,9 +53,9 @@ export function useNotes() {
   };
 
   const updateNote = async (id: number, formData: NoteFormData): Promise<Note> => {
-    const res = await fetch(`/api/notes/${id}`, {
+    const res = await fetch(`${API_URL}/api/notes/${id}`, {
       method: 'PUT',
-      headers,
+      headers: getHeaders(),
       body: JSON.stringify({
         title: formData.title,
         course: formData.course,
@@ -65,13 +71,13 @@ export function useNotes() {
   };
 
   const deleteNote = async (id: number): Promise<void> => {
-    const res = await fetch(`/api/notes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${API_URL}/api/notes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) throw new Error('Failed to delete');
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
   const exportNotes = async (): Promise<void> => {
-    const res = await fetch('/api/notes/export/my', { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${API_URL}/api/notes/export/my`, { headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) throw new Error('Export failed');
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -85,9 +91,9 @@ export function useNotes() {
   const importNotes = async (file: File): Promise<void> => {
     const text = await file.text();
     const data = JSON.parse(text);
-    const res = await fetch('/api/notes/import', {
+    const res = await fetch(`${API_URL}/api/notes/import`, {
       method: 'POST',
-      headers,
+      headers: getHeaders(),
       body: JSON.stringify({ notes: data }),
     });
     if (!res.ok) throw new Error('Import failed');

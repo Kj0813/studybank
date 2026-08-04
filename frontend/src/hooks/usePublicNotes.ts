@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Note } from '../types';
 
+const API_URL = 'studybank-api.onrender.com'; // ← your Render URL
+
 export function usePublicNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [courses, setCourses] = useState<string[]>([]);
@@ -13,7 +15,7 @@ export function usePublicNotes() {
       const params = new URLSearchParams();
       if (courseFilter) params.set('course', courseFilter);
       if (search) params.set('search', search);
-      const res = await fetch(`/api/notes/public?${params}`);
+      const res = await fetch(`${API_URL}/api/notes/public?${params}`);
       if (!res.ok) throw new Error('Failed to fetch public notes');
       const data = await res.json();
       setNotes(data);
@@ -27,7 +29,7 @@ export function usePublicNotes() {
 
   const fetchCourses = useCallback(async () => {
     try {
-      const res = await fetch('/api/notes/courses');
+      const res = await fetch(`${API_URL}/api/notes/courses`);
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       setCourses(data);

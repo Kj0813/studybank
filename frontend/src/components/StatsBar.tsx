@@ -18,8 +18,6 @@ function formatDate(iso: string): string {
 export const StatsBar: React.FC<StatsBarProps> = ({ notes }) => {
   const total = notes.length;
   const courses = new Set(notes.map(n => n.course)).size;
-  const weekAgo = Date.now() - 7 * 86400000;
-  const thisWeek = notes.filter(n => new Date(n.updatedAt).getTime() > weekAgo).length;
   const publicCount = notes.filter(n => n.isPublic).length;
   const lastUpdated = notes.length > 0
     ? formatDate(notes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt)
@@ -27,7 +25,7 @@ export const StatsBar: React.FC<StatsBarProps> = ({ notes }) => {
 
   return (
     <div className="stats-bar">
-      <div className="stat-card"><div className="stat-label">Total Notes</div><div className="stat-value">{total}</div></div>
+      <div className="stat-card"><div className="stat-label">My Notes</div><div className="stat-value">{total}</div></div>
       <div className="stat-card"><div className="stat-label">Courses</div><div className="stat-value">{courses}</div></div>
       <div className="stat-card"><div className="stat-label">Public</div><div className="stat-value">{publicCount}</div></div>
       <div className="stat-card"><div className="stat-label">Last Updated</div><div className="stat-value small">{lastUpdated}</div></div>
